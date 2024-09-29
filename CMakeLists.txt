@@ -1,35 +1,11 @@
-﻿
-cmake_minimum_required(VERSION 3.22.0)
+﻿cmake_minimum_required(VERSION 3.22.0)
 
-project(RaceSimulator_CMake)
+project(RaceSimulator)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(BINARY_DIR "${CMAKE_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BINARY_DIR}/bin")
 
-set (SOURCESDLL
-boots.cpp
-broom.cpp
-camel.cpp
-carpet.cpp
-centaur.cpp
-eagle.cpp
-fastCamel.cpp
-flying.cpp
-ground.cpp
-vehicle.cpp)
 
-set (HEADERSDLL
-boots.h
-broom.h
-camel.h
-carpet.h
-centaur.h
-eagle.h
-fastCamel.h
-flying.h
-ground.h
-vehicle.h)
-add_library(Vehicles SHARED ${HEADERSDLL} ${SOURCESDLL})
+add_subdirectory(lib)
 
-add_executable(RaceSimulator main.cpp)
-
-target_link_libraries(RaceSimulator Vehicles)
+add_subdirectory(app)

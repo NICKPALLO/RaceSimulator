@@ -18,23 +18,53 @@ void clear_screen()
 #endif
 }
 
-void beginRace(Vehicle** regVeh, int& amountReg, int& distance, bool& endRace, bool& exitTheGame)
+struct RaceResults {
+	std::string transport_name;
+	double time = 0;
+};
+
+RaceResults* makeRaceResults(Vehicle** regVeh, int& amountReg, int& distance)
+{
+	RaceResults* raceResults = new RaceResults[amountReg];
+	for (int i = 0; i < amountReg; ++i)
+	{
+		raceResults[i].transport_name = regVeh[i]->getName();
+		raceResults[i].time = regVeh[i]->getRaceTime(distance);
+	}
+	return raceResults;
+}
+
+Vehicle** makeVehicles(int& amountVehicle)
+{
+	amountVehicle = 7;
+	Vehicle** arrVec = new Vehicle * [amountVehicle];
+	arrVec[0] = new Camel;
+	arrVec[1] = new FastCamel;
+	arrVec[2] = new Centaur;
+	arrVec[3] = new Boots;
+	arrVec[4] = new Carpet;
+	arrVec[5] = new Eagle;
+	arrVec[6] = new Broom;
+	return arrVec;
+}
+
+void beginRace(RaceResults* raceResults, int& amountReg, bool& endRace, bool& exitTheGame)
 {
 	//сортировка
 	for (int i = 0; i < amountReg; i++)
 	{
 		for (int j = 0; j < amountReg; j++)
 		{
-			if (regVeh[i]->getRaceTime(distance) < regVeh[j]->getRaceTime(distance))
+			if (raceResults[i].time < raceResults[j].time)
 			{
-				std::swap(regVeh[i], regVeh[j]);
+				std::swap(raceResults[i], raceResults[j]);
 			}
 		}
 	}
 
 	for (int i = 0; i < amountReg; i++)
 	{
-		std::cout << i + 1 << ") " << regVeh[i]->getName() << ". Время: " << regVeh[i]->getRaceTime(distance) << std::endl;
+		std::cout << i + 1 << ") " << raceResults[i].transport_name << ". Время: " << raceResults[i].time << std::endl;
 	}
 
 	int choice;
@@ -61,10 +91,10 @@ void beginRace(Vehicle** regVeh, int& amountReg, int& distance, bool& endRace, b
 	} while (fault);
 }
 
-void registration(std::string& raceType,int& distance,const int& amountVehicle, Vehicle** vehicles, Vehicle** regVeh, int& amountReg, int& choiceRace)
+void registration(std::string& raceType, int& distance, const int& amountVehicle, Vehicle** vehicles, Vehicle** regVeh, int& amountReg, int& choiceRace)
 {
 	int choice = -1;
-	while (choice!=0)
+	while (choice != 0)
 	{
 		std::cout << raceType << ", Расстояние: " << distance << std::endl;
 
@@ -74,9 +104,9 @@ void registration(std::string& raceType,int& distance,const int& amountVehicle, 
 			for (int i = 0; i < amountReg; i++)
 			{
 				std::cout << regVeh[i]->getName();
-				if (i != amountReg-1)
+				if (i != amountReg - 1)
 				{
-					std::cout << " ,";
+					std::cout << ", ";
 				}
 			}
 			std::cout << std::endl;
@@ -84,7 +114,7 @@ void registration(std::string& raceType,int& distance,const int& amountVehicle, 
 
 		for (int i = 0; i < amountVehicle; i++)
 		{
-			std::cout << i+1 << ") " << vehicles[i]->getName() << std::endl;
+			std::cout << i + 1 << ") " << vehicles[i]->getName() << std::endl;
 		}
 		std::cout << "0) Закончить регистрацию\n";
 		std::cout << "Выберете транспорт или 0 для окончания процесса регистрации: ";
@@ -105,13 +135,13 @@ void registration(std::string& raceType,int& distance,const int& amountVehicle, 
 				}
 			}
 
-			if (vehicles[choice - 1]->getVehicleType() != choiceRace && choiceRace!=3) //Проверка типа ТС
+			if (vehicles[choice - 1]->getVehicleType() != choiceRace && choiceRace != 3) //Проверка типа ТС
 			{
 				std::cout << "Попытка зарегестрировать неправильный тип транспортного средства!\n";
 				permission = false;
 			}
 
-
+			
 			if (permission)
 			{
 				regVeh[amountReg] = vehicles[choice - 1];
@@ -123,22 +153,23 @@ void registration(std::string& raceType,int& distance,const int& amountVehicle, 
 	}
 }
 
+void deleteArrays(Vehicle** regVeh, Vehicle** vehicles, int amountVehicle)
+{
+	delete[] regVeh;
+	for (int i = 0; i < amountVehicle; ++i)
+	{
+		delete vehicles[i];
+	}
+	delete[] vehicles;
+}
+
 
 int main()
 {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-
-	const int amountVehicle = 7;
-	Camel camel;
-	FastCamel fastCamel;
-	Centaur centaur;
-	Boots boots;
-	Carpet carpet;
-	Eagle eagle;
-	Broom broom;
-
+	int amountVehicle = 7;
 
 	std::cout << "Добро пожаловать в гоночный симулятор!\n";
 
@@ -148,16 +179,8 @@ int main()
 	//начало игрового цикла
 	do
 	{
-		Vehicle** vehicles = new Vehicle* [amountVehicle];
+		Vehicle** vehicles = makeVehicles(amountVehicle);
 
-		vehicles[0] = &camel;
-		vehicles[1] = &fastCamel;
-		vehicles[2] = &centaur;
-		vehicles[3] = &boots;
-		vehicles[4] = &carpet;
-		vehicles[5] = &eagle;
-		vehicles[6] = &broom;
-		
 		int choiceRace;
 		std::string raceType;
 		do
@@ -187,7 +210,7 @@ int main()
 			clear_screen();
 
 		} while (fault);
-
+		
 		int distance;
 		do
 		{
@@ -227,19 +250,18 @@ int main()
 			case 2:
 				if (amountReg >= 2)
 				{
-					beginRace(regVeh, amountReg, distance, endRace, exitTheGame);
+					RaceResults* raceResults = makeRaceResults(regVeh, amountReg, distance);
+					beginRace(raceResults, amountReg, endRace, exitTheGame);
+					delete[] raceResults;
 					break;
 				}
 			}
 
 		} while (!endRace);
-		delete[] regVeh;
-		delete[] vehicles;
+
+		deleteArrays(regVeh, vehicles, amountVehicle);
 
 	} while (!exitTheGame);
 
 	return 0;
 }
-
-
-//удаляю ground.cpp flying.cpp flying.h
